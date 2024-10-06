@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "351460458508",
+    "project_id": "farmbridge-c7b10",
+    "storage_bucket": "farmbridge-c7b10.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351460458508:android:3f91541cf956074bba2e29",
+        "android_client_info": {
+          "package_name": "com.example.farmbridge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351460458508-tlodi4aqrt1qloruu35huhr87mhthq28.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.farmbridge",
+            "certificate_hash": "35a4fc8f6b0357a3888ece48b11c57864c6ff442"
+          }
+        },
+        {
+          "client_id": "351460458508-smlr3dggjo2qlb72q2jdi8rk3q1r4eiu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA68yDgpDOCM_nPmpS0WCp00x-kZxgeK0Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351460458508-cje22nhtqsgmckce2euahj7g5rdmsvc2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

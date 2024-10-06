@@ -1,3 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FarmBridge</string>
-</resources>
+    <string name="app_name">My App</string>
+    <string name="greeting">Hello</string> <!-- Example of a greeting -->
+    <!-- Add more strings as needed -->
+
+
+        <string name="otp_verification">OTP Verification</string>
+        <string name="welcome">WELCOME TO APP</string>
+        <string name="language_selection">Select Language</string>
+
+        <string name="settings">Settings</string>
+        <string name="logout">Logout</string>
+        <!-- Add more strings as needed -->
+
+
+    </resources>
+
+

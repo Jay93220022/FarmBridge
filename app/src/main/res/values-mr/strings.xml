@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">माझी अॅप</string>
-</resources>
+    <string name="app_name">मेरी ऐप</string>
+    <string name="greeting">नमस्कार</string> <!-- Example of a greeting -->
+    <!-- Add more strings as needed -->
+
+        <string name="otp_verification">OTP सत्यापन</string>
+        <string name="welcome">ऐप मध्ये आपले स्वागत आहे</string>
+        <string name="language_selection">भाषा निवडा</string>
+
+        <string name="settings">सेटिंग्ज</string>
+        <string name="logout">लॉगआउट</string>
+        <!-- Add more strings as needed -->
+    </resources>
+
+
+
+

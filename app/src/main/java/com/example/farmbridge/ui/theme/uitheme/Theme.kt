@@ -1,6 +1,5 @@
-package com.example.farmbridge.ui.theme
+package com.example.farmbridge.ui.theme.uitheme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

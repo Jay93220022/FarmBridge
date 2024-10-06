@@ -1,4 +1,4 @@
-package com.example.farmbridge.ui.theme
+package com.example.farmbridge.ui.theme.uitheme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
