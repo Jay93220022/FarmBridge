@@ -28,18 +28,71 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.farmbridge.R
+import com.example.farmbridge.ui.theme.LanguageViewModel
 import com.example.farmbridge.ui.theme.Navigation.Screen
 
 import com.example.farmbridge.ui.theme.ViewModels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Login(viewModel: AuthViewModel, navController: NavController) {
+fun Login(
+authViewModel: AuthViewModel,
+navController: NavController,
+languageViewModel: LanguageViewModel
+) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    val currentLanguage = languageViewModel.currentLanguage.collectAsState(initial = "English").value
+    val emailText = when (currentLanguage){
+        "Hindi"->"ईमेल"
+        "Marathi"->"ईमेल"
+        else -> "Email"
+    }
+    val passwordText = when (currentLanguage){
+        "Hindi"->"पासवर्ड"
+        "Marathi"->"पासवर्ड"
+        else -> "Password"
+    }
+    val loginText = when (currentLanguage){
+        "Hindi"->"लॉगिन"
+        "Marathi"->"लॉगिन"
+        else -> "Login"
+    }
+    val donthaveText = when (currentLanguage){
+        "Hindi"->"खाता नहीं है? पंजीकृत करें"
+        "Marathi"->"खाते नाही का? नोंदणी करणे"
+        else -> "Don't have Account ? Register"
+    }
+    val pedText = when (currentLanguage){
+        "Hindi"->"कृपया विवरण दर्ज करें"
+        "Marathi"->"कृपया तपशील प्रविष्ट करा"
+        else -> "Please Enter Details"
+    }
+    val forgotPassText = when (currentLanguage){
+        "Hindi"->"पासवर्ड भूल गए?"
+        "Marathi"->"पासवर्ड विसरला?"
+        else -> "Forgot Password?"
+    }
+    val peeText = when (currentLanguage){
+        "Hindi"->"कृपया ईमेल आईडी दर्ज करें"
+        "Marathi"->"कृपया ईमेल आयडी प्रविष्ट करा"
+        else -> "Please Enter Email Id"
+    }
+    val pepText = when (currentLanguage){
+        "Hindi"->"कृपया पासवर्ड दर्ज करें"
+        "Marathi"->"कृपया पासवर्ड प्रविष्ट करा"
+        else -> "Please Enter Password"
+    }
+
+
+
+
+
+
+
 
     Box(Modifier.fillMaxSize()) {
 
@@ -48,10 +101,10 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
             contentDescription = "",
             contentScale = ContentScale.Crop,
             alignment = Alignment.TopCenter,
-            modifier = Modifier.padding(start = 60.dp)
+            modifier = Modifier.padding(start = 60.dp, bottom = 20.dp)
         )
 
-        Spacer(Modifier.height(50.dp))
+
 
         Column(
             modifier = Modifier
@@ -67,7 +120,7 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
                 onValueChange = { email = it },
                 label = {
                     Text(
-                        "Email",
+                        text=emailText,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
@@ -76,8 +129,9 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
                     focusedBorderColor = Color.Black,
                     unfocusedBorderColor = Color.Black,
                     focusedTextColor = Color(0xFF006838),
+                    unfocusedTextColor = Color(0xFF006838),
                     cursorColor = Color.Black
-                ),
+                ),singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -88,15 +142,17 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
                 onValueChange = { password = it },
                 label = {
                     Text(
-                        "Password",
+                        text=passwordText,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
                 },
+                singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = Color.Black,
                     unfocusedBorderColor = Color.Black,
                     focusedTextColor = Color(0xFF006838),
+                    unfocusedTextColor = Color(0xFF006838),
                     cursorColor = Color.Black
                 ),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -125,7 +181,6 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
                 Text(
                     text = errorMessage,
                     color = Color.Red,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(8.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -134,18 +189,18 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
             Button(
                 onClick = {
                     if (email.isNotEmpty() && password.isNotEmpty()) {
-                        viewModel.login(email, password, {
+                        authViewModel.login(email, password, {
                             navController.navigate(Screen.Dashboard.route)
                         }, {
                             errorMessage = it
                         })
                     } else {
                         if (email.isEmpty() && password.isEmpty()) {
-                            Toast.makeText(context, "Please Enter Details", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, pedText, Toast.LENGTH_SHORT).show()
                         } else if (email.isEmpty()) {
-                            Toast.makeText(context, "Please Enter Email Id", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, peeText, Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Please Enter Password", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, pepText, Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
@@ -155,7 +210,7 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Login")
+                Text(loginText)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -163,11 +218,11 @@ fun Login(viewModel: AuthViewModel, navController: NavController) {
             TextButton(onClick = {
                 navController.navigate(Screen.Register.route)
             }) {
-                Text("Don't have Account ? Register", color =Color(0xFF006838))
+                Text(donthaveText, color =Color(0xFF006838))
             }
 
             TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
-                Text("Forgot Password?",color =Color(0xFF006838))
+                Text(forgotPassText,color =Color(0xFF006838))
             }
         }
     }

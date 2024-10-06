@@ -42,15 +42,15 @@ fun Navigation(authViewModel: AuthViewModel,languageViewModel: LanguageViewModel
             )
         }
         composable(route=Screen.Login.route){
-            Login(viewModel = authViewModel,navController)
+            Login(authViewModel = authViewModel,navController,languageViewModel=languageViewModel)
         }
 
         composable(route = Screen.Register.route) {
-            Register(viewModel = authViewModel, navController = navController)// here
+            Register(viewModel = authViewModel, navController = navController,languageViewModel)// here
         }
 
         composable(Screen.ForgotPassword.route){
-            ForgotPassword(viewModel =authViewModel,navController=navController)
+            ForgotPassword(viewModel =authViewModel,navController=navController,languageViewModel)
         }
 
 

@@ -61,7 +61,7 @@ scale.animateTo(
 
 
         CircularProgressIndicator(
-            color = Color.Black,
+            color = Color(0xFF006838),
             strokeWidth = 5.dp,
             modifier = Modifier.size(40.dp)
         )
