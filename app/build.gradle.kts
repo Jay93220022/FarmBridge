@@ -70,6 +70,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
 implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
     implementation (platform("com.google.firebase:firebase-bom:32.0.0"))
     implementation ("com.google.firebase:firebase-firestore")
@@ -77,8 +78,9 @@ implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-
-
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+  //  implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
 
 
 }

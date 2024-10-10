@@ -1,6 +1,9 @@
 package com.example.farmbridge.ui.theme.Navigation
 
 
+import MarketPrice
+
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,15 +21,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.farmbridge.ui.theme.LanguageViewModel
 import com.example.farmbridge.ui.theme.Screens.ForgotPassword
 import com.example.farmbridge.ui.theme.Screens.Login
+
 import com.example.farmbridge.ui.theme.Screens.Register
+import com.example.farmbridge.ui.theme.Screens.WeatherScreen
 import com.example.farmbridge.ui.theme.ViewModels.AuthViewModel
+import com.example.farmbridge.ui.theme.ViewModels.MarketViewModel
+import com.example.farmbridge.ui.theme.ViewModels.WeatherViewModel
 
 // Composable Navigation function
 @Composable
-fun Navigation(authViewModel: AuthViewModel,languageViewModel: LanguageViewModel) {
+fun Navigation(authViewModel: AuthViewModel,
+               languageViewModel: LanguageViewModel,
+               marketPriceViewModel: MarketViewModel,
+               weatherViewModel: WeatherViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val languageViewModel: LanguageViewModel = viewModel()
+
 
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
         // Splash Screen
@@ -37,12 +47,12 @@ fun Navigation(authViewModel: AuthViewModel,languageViewModel: LanguageViewModel
         composable(route = Screen.SelectLanguage.route) {
             SelectLanguage(
 
-                navController = navController, // Pass NavController
-                viewModel = languageViewModel // Pass the ViewModel instance here
+                navController = navController,
+                viewModel = languageViewModel
             )
         }
         composable(route=Screen.Login.route){
-            Login(authViewModel = authViewModel,navController,languageViewModel=languageViewModel)
+            Login(authViewModel,navController,languageViewModel,)
         }
 
         composable(route = Screen.Register.route) {
@@ -56,10 +66,16 @@ fun Navigation(authViewModel: AuthViewModel,languageViewModel: LanguageViewModel
 
         composable(route = Screen.Dashboard.route) {
             Dashboard(
-                viewModel = languageViewModel
+                viewModel = languageViewModel,
+                navController
             )
         }
-
+        composable(route =Screen.MarketPrice.route){
+            MarketPrice(marketPriceViewModel)
+        }
+composable(Screen.WeatherScreen.route){
+    WeatherScreen(weatherViewModel)
+}
 
     }
 }

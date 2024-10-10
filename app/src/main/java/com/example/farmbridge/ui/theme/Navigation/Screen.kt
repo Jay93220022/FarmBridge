@@ -7,5 +7,7 @@ sealed class Screen(val route:String){
     object  Dashboard :Screen("dashboard")
     object Login:Screen("login")
     object ForgotPassword:Screen("forgotpassword")
+    object MarketPrice :Screen("marketprice")
+    object  WeatherScreen:Screen("weatherscreen")
 
 }

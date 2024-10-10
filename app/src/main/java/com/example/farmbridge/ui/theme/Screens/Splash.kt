@@ -1,6 +1,7 @@
 package com.example.farmbridge.ui.theme.Screens
 
 import android.view.animation.OvershootInterpolator
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,51 +22,62 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.farmbridge.R
 import com.example.farmbridge.ui.theme.Navigation.Screen
+import com.example.farmbridge.ui.theme.uitheme.FarmBridgeTheme
 import kotlinx.coroutines.delay
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 
 @Composable
-fun Splash(modifier: Modifier = Modifier,navController: NavController) {
-val scale = remember {
-    Animatable(0f)
-}
-    var progress by remember { mutableStateOf(0f) }
+fun Splash(modifier: Modifier = Modifier, navController: NavController) {
+    val scale = remember {
+        Animatable(0f)
+    }
+
     LaunchedEffect(key1 = true) {
-scale.animateTo(
-    targetValue = 1.5f,
-    animationSpec = tween(
-        durationMillis = 1000,
-        easing = {
-            OvershootInterpolator(2f).getInterpolation(it)
-        }
-    )
-)
-        delay(1000L)
-        navController.navigate(Screen.SelectLanguage.route) {
-            popUpTo(Screen.Splash.route) { inclusive = true }
-
-        }
-        }
-
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-        Image(painter = painterResource(id = R.drawable.logo),
-            contentDescription ="Logo",
-            contentScale = ContentScale.Crop,
-           alignment =Alignment.Center)
-
-        Spacer(modifier = Modifier.height(224.dp))
-
-
-        CircularProgressIndicator(
-            color = Color(0xFF006838),
-            strokeWidth = 5.dp,
-            modifier = Modifier.size(40.dp)
+        scale.animateTo(
+            targetValue = 1.5f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                easing = {
+                    OvershootInterpolator(2f).getInterpolation(it)
+                }
+            )
         )
+        delay(1000L)
+        navController.navigate(Screen.Dashboard.route) {
+            popUpTo(Screen.Splash.route) { inclusive = true }
+        }
+    }
 
+    FarmBridgeTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .then(modifier), // Respect the incoming modifier
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Use the primary color from the theme for the Image content
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo",
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center
+            )
 
+            Spacer(modifier = Modifier.height(224.dp))
+
+            // Dynamically adapt the CircularProgressIndicator color based on the theme
+            CircularProgressIndicator(
+                color = Color(0xFF006838),
+                strokeWidth = 5.dp,
+                modifier = Modifier.size(40.dp)
+            )
+        }
     }
 }
