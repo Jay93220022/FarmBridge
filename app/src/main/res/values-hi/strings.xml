@@ -10,7 +10,8 @@
 
         <string name="settings">सेटिंग्स</string>
         <string name="logout">लॉगआउट</string>
-        <!-- Add more strings as needed -->
+    <string name="welcomemsg">"एप मे आपका स्वागत है "</string>
+    <!-- Add more strings as needed -->
     </resources>
 
 

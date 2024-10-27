@@ -11,8 +11,7 @@
 
         <string name="settings">Settings</string>
         <string name="logout">Logout</string>
-        <!-- Add more strings as needed -->
-
+    <string name="welcomemsg" translatable="false">Welcome to farmbridge</string>
 
     </resources>
 

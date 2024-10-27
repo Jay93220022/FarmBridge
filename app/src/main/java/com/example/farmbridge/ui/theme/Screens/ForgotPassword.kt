@@ -3,6 +3,7 @@ package com.example.farmbridge.ui.theme.Screens
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,7 +44,7 @@ fun ForgotPassword(viewModel: AuthViewModel, navController: NavController,langua
         else -> "Please Enter Email Id"
     }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "",
@@ -62,13 +63,13 @@ fun ForgotPassword(viewModel: AuthViewModel, navController: NavController,langua
                 onValueChange = { email = it },
                 label = { Text(emailText, fontWeight = FontWeight.Bold) },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Black,
+                    focusedLabelColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onBackground,
                     cursorColor = Color(0xFF006838),
                     focusedTextColor = Color(0xFF006838),
                     unfocusedTextColor = Color(0xFF006838),
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.Black
+                    focusedBorderColor =MaterialTheme.colorScheme.onBackground,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onBackground
                 ),
               modifier =   Modifier.fillMaxWidth()
             )
