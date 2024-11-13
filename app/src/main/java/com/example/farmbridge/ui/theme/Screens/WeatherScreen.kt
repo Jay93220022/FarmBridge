@@ -54,12 +54,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import com.example.farmbridge.ui.theme.LanguageViewModel
+import com.example.farmbridge.ui.theme.uitheme.FarmBridgeTheme
 
 import java.io.BufferedReader
 import java.io.InputStreamReader
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherScreen(weatherViewModel: WeatherViewModel, languageViewModel: LanguageViewModel, modifier: Modifier) {
+
+    FarmBridgeTheme {
+
+
     var city by remember { mutableStateOf("") }
     var showSuggestions by remember { mutableStateOf(false) }
     val suggestions = remember { mutableStateListOf<String>() }
@@ -223,7 +228,7 @@ fun WeatherScreen(weatherViewModel: WeatherViewModel, languageViewModel: Languag
             }
         }
     }
-}
+}}
 
 @Composable
 fun WeatherDetails(data: WeatherModel, currentLanguage: String) {

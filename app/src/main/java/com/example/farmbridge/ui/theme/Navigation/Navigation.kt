@@ -24,6 +24,7 @@ import com.example.farmbridge.ui.theme.Components.MainScreen
 import com.example.farmbridge.ui.theme.LanguageViewModel
 import com.example.farmbridge.ui.theme.Screens.Dashboard
 import com.example.farmbridge.ui.theme.Screens.ForgotPassword
+import com.example.farmbridge.ui.theme.Screens.LatestUpdatesScreen
 import com.example.farmbridge.ui.theme.Screens.Login
 
 import com.example.farmbridge.ui.theme.Screens.Register
@@ -87,5 +88,8 @@ composable(Screen.WeatherScreen.route){
             AddCropScreen(marketPriceViewModel ,context, languageViewModel )
         }
 
+        composable(Screen.LatestUpdates.route) {
+            LatestUpdatesScreen(navController = navController)
+        }
     }
 }

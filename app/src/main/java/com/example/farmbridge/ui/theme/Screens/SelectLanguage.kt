@@ -34,13 +34,13 @@ fun SelectLanguage(navController: NavController, viewModel: LanguageViewModel) {
     val supportedLanguages = viewModel.getSupportedLanguages()
 
     // If a language is already selected, navigate to the next screen (e.g., Dashboard)
-//    LaunchedEffect(currentLanguage) {
-//        if (currentLanguage != "English") {  // Adjust this if needed for the default language
-//            navController.navigate(Screen.MainScreen.route) {
-//               // popUpTo(Screen.SelectLanguage.route) { inclusive = true }
-//            }
-//        }
-//    }
+    LaunchedEffect(currentLanguage) {
+        if (currentLanguage != "English") {  // Adjust this if needed for the default language
+            navController.navigate(Screen.MainScreen.route) {
+               // popUpTo(Screen.SelectLanguage.route) { inclusive = true }
+            }
+        }
+    }
 
     // Language selection screen
     Column(
@@ -78,7 +78,7 @@ fun SelectLanguage(navController: NavController, viewModel: LanguageViewModel) {
                     onClick = {
                         viewModel.setLanguage(language)
                         navController.navigate(Screen.MainScreen.route) {
-                         //   popUpTo(Screen.SelectLanguage.route) { inclusive = true }
+                          popUpTo(Screen.SelectLanguage.route) { inclusive = true }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

@@ -11,4 +11,5 @@ sealed class Screen(val route:String){
     object  WeatherScreen:Screen("weatherscreen")
     object  MainScreen:Screen("mainscreen")
 object AddCropnScreen:Screen("addcropscreen")
+    object LatestUpdates : Screen("latest_updates")
 }

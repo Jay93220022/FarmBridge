@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
@@ -45,7 +46,7 @@ fun Dashboard(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .background(Color.Gray),
+                .background(Color(0xFFF1F8E9)), // Light green background
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -57,13 +58,51 @@ fun Dashboard(
                     "Marathi" -> "आपले स्वागत आहे"
                     else -> "Welcome to FarmBridge"
                 },
-                color = Color.Black,
+                color = Color(0xFF2E7D32), // Dark green text color
                 fontSize = MaterialTheme.typography.headlineSmall.fontSize
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Section: Latest Updates
+            DashboardCard(
+                title = "Latest Updates",
+                description = "Stay informed with the latest agricultural news and updates.",
+                icon = Icons.Default.ShoppingCart,
+                onClick = { navController.navigate(Screen.LatestUpdates.route) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Add more sections here (e.g., Latest Updates, Market Prices, etc.)
+            // Section: Market Prices
+            DashboardCard(
+                title = "Market Prices",
+                description = "Check the latest market prices for various crops.",
+                icon = Icons.Default.ShoppingCart,
+                onClick = { navController.navigate(Screen.MarketPrice.route)}
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Section: Weather Updates
+            DashboardCard(
+                title = "Weather Updates",
+                description = "Get real-time weather information for your location.",
+                icon = Icons.Default.Person,
+                onClick = { navController.navigate(Screen.WeatherScreen.route)}
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Section: Government Schemes
+            DashboardCard(
+                title = "Government Schemes",
+                description = "Explore available schemes and subsidies for farmers.",
+                icon = Icons.Default.Person,
+                onClick = { /* Navigate to schemes screen */ }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // Show the language selection dialog when showLanguageDialog is true
@@ -75,6 +114,53 @@ fun Dashboard(
         }
     }
 }
+
+// Composable for individual dashboard cards
+@Composable
+fun DashboardCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFC8E6C9)) // Light green card color
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = Color(0xFF388E3C), // Darker green for icons
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF2E7D32)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF4CAF50)
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun LanguageSelectionDialog(viewModel: LanguageViewModel, onDismiss: () -> Unit) {
@@ -92,7 +178,7 @@ fun LanguageSelectionDialog(viewModel: LanguageViewModel, onDismiss: () -> Unit)
                 Text(
                     text = "Select Language",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -107,7 +193,11 @@ fun LanguageSelectionDialog(viewModel: LanguageViewModel, onDismiss: () -> Unit)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = 4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4CAF50),
+                            contentColor = Color.White
+                        )
                     ) {
                         Text(text = language)
                     }
