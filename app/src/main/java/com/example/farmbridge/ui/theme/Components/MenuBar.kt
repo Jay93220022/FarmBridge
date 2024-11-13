@@ -53,7 +53,7 @@ fun MenuBar(
                     fontSize = 35.sp,
                     fontWeight = FontWeight.Bold,
 
-                )
+                    )
             ){
                 append("B")
             }

@@ -1,26 +1,20 @@
-// Dashboard.kt
 package com.example.farmbridge.ui.theme.Screens
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.farmbridge.R
-import com.example.farmbridge.ui.theme.Components.BottomBar
-import com.example.farmbridge.ui.theme.Components.BottomNavItem
-//import com.example.farmbridge.ui.theme.Components.ImageSlider
 import com.example.farmbridge.ui.theme.Components.MenuBar
 import com.example.farmbridge.ui.theme.LanguageViewModel
 import com.example.farmbridge.ui.theme.Navigation.Screen
@@ -31,61 +25,32 @@ fun Dashboard(
     viewModel: LanguageViewModel,
     navController: NavController
 ) {
-    // Observe language changes from the ViewModel
     val currentLanguage = viewModel.currentLanguage.collectAsState(initial = "English").value
-
-    // Define BottomBar items
-    val bottomNavItems = listOf(
-        BottomNavItem("Market", painterResource(R.drawable.baseline_show_chart_24), Screen.MarketPrice.route),
-        BottomNavItem("Weather", painterResource(R.drawable.baseline_wb_cloudy_24), Screen.WeatherScreen.route), // Weather option added
-        BottomNavItem("Profile", painterResource(R.drawable.baseline_person_24), Screen.Splash.route)
-    )
+    var showLanguageDialog by remember { mutableStateOf(false) } // Track dialog visibility
 
     Scaffold(
         topBar = {
             MenuBar(
                 title = "Dashboard",
                 onMenuClick = { /* Handle menu click */ },
-                onProfileClick = { navController.navigate(Screen.Login.route) }, // Navigate to profile
-                onSettingsClick = { navController.navigate(Screen.ForgotPassword.route) }, // Navigate to settings
-                onChangeLanguageClick = { navController.navigate(Screen.Login.route) },
-                navController
+                onProfileClick = { /* Navigate to profile screen */ },
+                onSettingsClick = { /* Navigate to settings screen */ },
+                onChangeLanguageClick = { showLanguageDialog = true }, // Show language dialog
+                navController = navController
             )
         },
-        bottomBar = {
-            BottomBar(
-                items = bottomNavItems,
-                onItemClick = { item ->
-                    navController.navigate(item.route)
-                }
-            )
-        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Add padding to avoid overlapping with bars
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .background(Color.Gray),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Image Slider displaying the latest information
-//            ImageSlider(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .padding(8.dp),
-//                images = listOf(
-//                    "https://image-url1.com",  // Replace with actual image URLs
-//                    "https://image-url2.com",
-//                    "https://image-url3.com"
-//                )
-//            )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Display current language-based content
             Text(
                 text = when (currentLanguage) {
                     "Hindi" -> "आपका स्वागत है"
@@ -98,7 +63,56 @@ fun Dashboard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Add more sections below (e.g., Latest Updates, Market Prices, etc.)
+            // Add more sections here (e.g., Latest Updates, Market Prices, etc.)
+        }
+
+        // Show the language selection dialog when showLanguageDialog is true
+        if (showLanguageDialog) {
+            LanguageSelectionDialog(
+                viewModel = viewModel,
+                onDismiss = { showLanguageDialog = false } // Close dialog on dismiss
+            )
+        }
+    }
+}
+
+@Composable
+fun LanguageSelectionDialog(viewModel: LanguageViewModel, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Select Language",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Display language options
+                listOf("English", "Hindi", "Marathi").forEach { language ->
+                    Button(
+                        onClick = {
+                            viewModel.setLanguage(language)
+                            onDismiss() // Close the dialog after selection
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Text(text = language)
+                    }
+                }
+            }
         }
     }
 }

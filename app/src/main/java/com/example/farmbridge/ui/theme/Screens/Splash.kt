@@ -48,7 +48,7 @@ fun Splash(modifier: Modifier = Modifier, navController: NavController) {
             )
         )
         delay(1000L)
-        navController.navigate(Screen.Login.route) {
+        navController.navigate(Screen.SelectLanguage.route) {
             popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }
@@ -62,7 +62,6 @@ fun Splash(modifier: Modifier = Modifier, navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Use the primary color from the theme for the Image content
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",

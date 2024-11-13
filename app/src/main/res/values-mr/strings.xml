@@ -7,10 +7,18 @@
         <string name="otp_verification">OTP सत्यापन</string>
         <string name="welcome">ऐप मध्ये आपले स्वागत आहे</string>
         <string name="language_selection">भाषा निवडा</string>
-
         <string name="settings">सेटिंग्ज</string>
         <string name="logout">लॉगआउट</string>
     <string name="welcomemsg">"एप "</string>
+    <string name="search_location_label">कोई भी स्थान खोजें</string>
+    <string name="search">खोज</string>
+    <string name="enter_location_prompt">मौसम डेटा प्राप्त करने के लिए स्थान दर्ज करें</string>
+    <string name="humidity">आर्द्रता</string>
+    <string name="wind_speed">हवाकी गति</string>
+    <string name="uv">यूवी</string>
+    <string name="precipitation">वर्षा</string>
+    <string name="visibility">दृश्यता</string>
+    <string name="air_pressure">वायुदाब</string>
     <!-- Add more strings as needed -->
     </resources>
 

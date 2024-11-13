@@ -4,6 +4,7 @@ package com.example.farmbridge.ui.theme.Navigation
 import MarketPrice
 
 
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,12 +14,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.farmbridge.ui.theme.Navigation.Screen
-import com.example.farmbridge.ui.theme.Screens.Dashboard
+
 import com.example.farmbridge.ui.theme.Screens.SelectLanguage
 import com.example.farmbridge.ui.theme.Screens.Splash
 
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.farmbridge.ui.Screens.AddCropScreen
+import com.example.farmbridge.ui.theme.Components.MainScreen
 import com.example.farmbridge.ui.theme.LanguageViewModel
+import com.example.farmbridge.ui.theme.Screens.Dashboard
 import com.example.farmbridge.ui.theme.Screens.ForgotPassword
 import com.example.farmbridge.ui.theme.Screens.Login
 
@@ -71,11 +75,17 @@ fun Navigation(authViewModel: AuthViewModel,
             )
         }
         composable(route =Screen.MarketPrice.route){
-            MarketPrice(marketPriceViewModel)
+            MarketPrice(marketPriceViewModel,languageViewModel)
         }
 composable(Screen.WeatherScreen.route){
-    WeatherScreen(weatherViewModel)
+    WeatherScreen(weatherViewModel,languageViewModel, modifier = Modifier)
 }
+        composable(Screen.MainScreen.route){
+            MainScreen(modifier = Modifier,weatherViewModel,languageViewModel,navController,marketPriceViewModel, context )
+        }
+        composable(Screen.AddCropnScreen.route){
+            AddCropScreen(marketPriceViewModel ,context, languageViewModel )
+        }
 
     }
 }
