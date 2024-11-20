@@ -171,25 +171,24 @@ class MarketViewModel(application: Application) : AndroidViewModel(application) 
         cropName: String,
         quantity: String,
         price: String,
-        imageUri: Uri
     ) {
         viewModelScope.launch {
             try {
                 _isUploading.value = true
 
                 // Upload image and get URL
-                val uploadedImageUrl = uploadImageToStorage(imageUri)
-                if (uploadedImageUrl == null) {
-                    _uploadError.value = "Image upload failed"
-                    return@launch
-                }
+             //   val uploadedImageUrl = uploadImageToStorage(imageUri)
+//                if (uploadedImageUrl == null) {
+//                    _uploadError.value = "Image upload failed"
+//                    return@launch
+//                }
 
                 // Add crop data
                 val cropData = hashMapOf(
                     "cropName" to cropName,
                     "quantity" to quantity,
                     "price" to price,
-                    "imageUrl" to uploadedImageUrl,
+                //    "imageUrl" to uploadedImageUrl,
                     "harvestDate" to harvestDate.value
                 )
 
@@ -242,4 +241,6 @@ class MarketViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+
+
 }

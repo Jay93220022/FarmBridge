@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.*
 import java.util.*
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,7 +32,9 @@ import androidx.navigation.NavController
 import com.example.farmbridge.ui.theme.LanguageViewModel
 import com.example.farmbridge.ui.theme.Navigation.Screen
 import com.example.farmbridge.ui.theme.ViewModels.MarketViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
 import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +49,7 @@ fun AddCropScreen(
     var harvestDate by remember { mutableStateOf("") }
     val suggestedPrice = marketViewModel.suggestedPrice.value
     val farmerCrops = marketViewModel.farmerCrops.collectAsState()
-//    val imageUrl = marketViewModel.imageUrl.collectAsState()
+    val imageUrl = marketViewModel.imageUrl.collectAsState()
 //    val isUploading = marketViewModel.isUploading.collectAsState()
 //    val uploadError = marketViewModel.uploadError.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
@@ -68,11 +71,18 @@ fun AddCropScreen(
     val cropDeletedSuccess by remember { marketViewModel.cropDeletedSuccess }
     val green = Color(0xFF4CAF50)
     val currentLanguage = languageViewModel.currentLanguage.collectAsState(initial = "English").value
+
+    val scope = rememberCoroutineScope()
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            marketViewModel.uploadImageToStorage(it) } }
+            scope.launch {
+                marketViewModel.uploadImageToStorage(it)
+            }
+        }
+    }
     LaunchedEffect(cropAddedSuccess, cropUpdatedSuccess, cropDeletedSuccess) {
         when {
             cropAddedSuccess -> {
@@ -130,7 +140,8 @@ fun AddCropScreen(
                             onValueChange = {
                                 cropName = it
                                 if (cropName.isNotBlank()) {
-                                    marketViewModel.getSuggestedPriceForCrop(cropName) }
+                                    marketViewModel.getSuggestedPriceForCrop(cropName)
+                                }
                             }, singleLine = true,
                             label = {
                                 Text(
@@ -138,8 +149,11 @@ fun AddCropScreen(
                                         "Hindi" -> "फसल का नाम"
                                         "Marathi" -> "पिकाचे नाव"
                                         else -> "Crop Name"
-                                    }) },
-                            modifier = Modifier.fillMaxWidth())
+                                    }
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = harvestDate,
@@ -154,7 +168,9 @@ fun AddCropScreen(
                                         "Hindi" -> "कटाई की तारीख"
                                         "Marathi" -> "कापणी तारीख"
                                         else -> "Harvest Date"
-                                    }) },
+                                    }
+                                )
+                            },
                             trailingIcon = {
                                 IconButton(
                                     onClick = {
@@ -163,7 +179,9 @@ fun AddCropScreen(
                                     Icon(
                                         imageVector = Icons.Default.DateRange, // Material Design standard icon
                                         contentDescription = "Select Date"
-                                    ) }},
+                                    )
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true // Optional, prevents direct text input
                         )
@@ -190,12 +208,16 @@ fun AddCropScreen(
                                         style = MaterialTheme.typography.headlineSmall,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                                         fontWeight = FontWeight.Bold
-                                    ) } }
+                                    )
+                                }
+                            }
                         } else {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(
+                                        alpha = 0.1f
+                                    )
                                 )
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
@@ -223,7 +245,10 @@ fun AddCropScreen(
                                             )
                                         },
                                         modifier = Modifier.fillMaxWidth()
-                                    ) } } }
+                                    )
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Quantity Field
@@ -267,70 +292,90 @@ fun AddCropScreen(
                                 )
                             }
 
-                            if (isUploading.value) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = green
+
+
+
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Add Crop Button
+                            // Add Crop Button
+                            Button(
+                                onClick = {
+                                    if (cropName.isNotBlank() && cropQuantity.isNotBlank() &&
+                                        (suggestedPrice != null || manualPrice.isNotBlank())
+                                    ) {
+                                        // Perform Firestore query to check if the crop exists
+                                        val cropsRef =
+                                            FirebaseFirestore.getInstance().collection("Crops")
+
+                                        // Query to check if the crop name exists
+                                        cropsRef.whereEqualTo("name", cropName).get()
+                                            .addOnSuccessListener { documents ->
+                                                if (documents.isEmpty) {
+                                                    // Crop does not exist, proceed to add it
+                                                    marketViewModel.addCropToDatabase(
+                                                        cropName,
+                                                        cropQuantity,
+                                                        suggestedPrice?.price ?: manualPrice
+                                                    )
+                                                } else {
+                                                    // Crop already exists, show a message
+                                                    Toast.makeText(
+                                                        context,
+                                                        when (currentLanguage) {
+                                                            "Hindi" -> "यह फसल पहले से मौजूद है"
+                                                            "Marathi" -> "ही पीक आधीच अस्तित्वात आहे"
+                                                            else -> "This crop is already present"
+                                                        },
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+                                            .addOnFailureListener { exception ->
+                                                Log.e("AddCrop", "Error checking crop: $exception")
+                                                Toast.makeText(
+                                                    context,
+                                                    when (currentLanguage) {
+                                                        "Hindi" -> "फसल की जांच में समस्या आई"
+                                                        "Marathi" -> "पिक तपासणीमध्ये त्रुटी आली"
+                                                        else -> "Error checking crop"
+                                                    },
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                    } else {
+                                        // Show a toast if any field is blank
+                                        Toast.makeText(
+                                            context,
+                                            when (currentLanguage) {
+                                                "Hindi" -> "कृपया सभी फ़ील्ड भरें"
+                                                "Marathi" -> "कृपया सर्व फील्ड भरा"
+                                                else -> "Please fill in all fields"
+                                            },
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = green,
+                                    contentColor = Color.White
                                 )
-                            } else if (imageUrl.value != null) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Image uploaded",
-                                    tint = green
+                            ) {
+                                Text(
+                                    text = when (currentLanguage) {
+                                        "Hindi" -> "फसल जोड़ें"
+                                        "Marathi" -> "पिक जोडा"
+                                        else -> "Add Crop"
+                                    }
                                 )
                             }
-                        }
 
-                        if (uploadError.value != null) {
-                            Text(
-                                text = uploadError.value!!,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Add Crop Button
-                        Button(
-                            onClick = {
-                                if (cropName.isNotBlank() && cropQuantity.isNotBlank() &&
-                                    (suggestedPrice != null || manualPrice.isNotBlank())
-                                ) {
-                                    marketViewModel.addCropToDatabase(
-                                        cropName,
-                                        cropQuantity,
-                                        suggestedPrice?.price ?: manualPrice
-                                    )
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        when (currentLanguage) {
-                                            "Hindi" -> "कृपया सभी फ़ील्ड भरें"
-                                            "Marathi" -> "कृपया सर्व फील्ड भरा"
-                                            else -> "Please fill in all fields"
-                                        },
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = green,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text(
-                                text = when (currentLanguage) {
-                                    "Hindi" -> "फसल जोड़ें"
-                                    "Marathi" -> "पिक जोडा"
-                                    else -> "Add Crop"
-                                }
-                            )
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Your Added Crops Section
@@ -346,65 +391,66 @@ fun AddCropScreen(
             }
 
             // Crop List
-            items(farmerCrops.value) { crop ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
+                items(farmerCrops.value, key = { crop -> crop.id }) { crop ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 4.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = crop.cropName,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${crop.quantity} Quintals",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            if (crop.harvestDate.isNotBlank()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Harvest: ${crop.harvestDate}",
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = crop.cropName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${crop.quantity} Quintals",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                if (crop.harvestDate.isNotBlank()) {
+                                    Text(
+                                        text = "Harvest: ${crop.harvestDate}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
-                        }
 
-                        Row {
-                            IconButton(onClick = {
-                                selectedCrop = crop
-                                showEditDialog = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Edit,
-                                    contentDescription = "Edit"
-                                )
-                            }
+                            Row {
+                                IconButton(onClick = {
+                                    selectedCrop = crop
+                                    showEditDialog = true
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Edit,
+                                        contentDescription = "Edit"
+                                    )
+                                }
 
-                            IconButton(onClick = {
-                                cropToDelete = crop
-                                showDeleteDialog = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Delete,
-                                    contentDescription = "Delete"
-                                )
+                                IconButton(onClick = {
+                                    cropToDelete = crop
+                                    showDeleteDialog = true
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
-    }
+
+
+    }}
 
 
     // Edit Dialog and Delete Confirmation Dialog remain the same...
