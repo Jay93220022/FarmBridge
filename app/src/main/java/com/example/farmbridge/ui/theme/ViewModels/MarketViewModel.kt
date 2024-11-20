@@ -1,42 +1,91 @@
 package com.example.farmbridge.ui.theme.ViewModels
 
+import android.app.Application
+import android.net.Uri
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.farmbridge.ui.theme.DataClasses.MarketItem
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class MarketViewModel : ViewModel() {
+class MarketViewModel(application: Application) : AndroidViewModel(application) {
     val cropAddedSuccess = mutableStateOf(false)
     val cropUpdatedSuccess = mutableStateOf(false)
     val cropDeletedSuccess = mutableStateOf(false)
     val state = mutableStateOf<List<MarketItem>>(emptyList())
     val suggestedPrice = mutableStateOf<MarketItem?>(null)
+    val harvestDate = mutableStateOf("")
+
+    private val _imageUrl = MutableStateFlow<String?>(null)
+    val imageUrl = _imageUrl.asStateFlow()
+
+    private val _isUploading = MutableStateFlow(false)
+    val isUploading = _isUploading.asStateFlow()
+
+    private val _uploadError = MutableStateFlow<String?>(null)
+    val uploadError = _uploadError.asStateFlow()
+
+    private val _farmerCrops = MutableStateFlow<List<FarmerCrop>>(emptyList())
+    val farmerCrops: StateFlow<List<FarmerCrop>> = _farmerCrops.asStateFlow()
 
     init {
         getData()
-    }
-
-    // Updated FarmerCrop data class with ID
-    data class FarmerCrop(
-        val id: String = "",  // Added document ID
-        val cropName: String = "",
-        val quantity: String = "",
-        val price: String = ""
-    )
-
-    private val _farmerCrops = MutableStateFlow<List<FarmerCrop>>(emptyList())
-    val farmerCrops: StateFlow<List<FarmerCrop>> = _farmerCrops
-
-    init {
         getFarmerCrops()
     }
 
+    data class FarmerCrop(
+        val id: String = "",
+        val cropName: String = "",
+        val quantity: String = "",
+        val price: String = "",
+        val imageUrl: String? = null,
+        val harvestDate: String = ""
+    )
+
+
+    fun updateCrop(cropId: String, cropName: String, quantity: String, price: String) {
+        viewModelScope.launch {
+            val cropData = hashMapOf(
+                "cropName" to cropName,
+                "quantity" to quantity,
+                "price" to price
+            )
+
+            FirebaseFirestore.getInstance()
+                .collection("Crops")
+                .document(cropId)
+                .update(cropData.toMap())
+                .addOnSuccessListener {
+                    cropUpdatedSuccess.value = true
+                }
+                .addOnFailureListener {
+                    cropUpdatedSuccess.value = false
+                }
+        }
+    }
+
+    fun deleteCrop(cropId: String) {
+        viewModelScope.launch {
+            FirebaseFirestore.getInstance()
+                .collection("Crops")
+                .document(cropId)
+                .delete()
+                .addOnSuccessListener {
+                    cropDeletedSuccess.value = true
+                }
+                .addOnFailureListener {
+                    cropDeletedSuccess.value = false
+                }
+        }
+    }
     private fun getData() {
         viewModelScope.launch {
             state.value = getDataFromFireStore()
@@ -89,58 +138,78 @@ class MarketViewModel : ViewModel() {
         }
     }
 
-    fun addCropToDatabase(cropName: String, quantity: String, price: String) {
-        viewModelScope.launch {
-            val cropData = hashMapOf(
-                "cropName" to cropName,
-                "quantity" to quantity,
-                "price" to price
-            )
-            FirebaseFirestore.getInstance()
-                .collection("Crops")
-                .add(cropData)
-                .addOnSuccessListener {
-                    cropAddedSuccess.value = true
-                }
-                .addOnFailureListener {
-                    cropAddedSuccess.value = false
-                }
+     suspend fun uploadImageToStorage(imageUri: Uri): String? {
+        return try {
+            val timestamp = System.currentTimeMillis()
+            val fileExtension = getFileExtension(imageUri)
+            val fileName = "crop_image_${timestamp}.$fileExtension"
+
+            val storageRef = FirebaseStorage.getInstance()
+                .reference
+                .child("crop_images/$fileName")
+
+            storageRef.putFile(imageUri).await()
+            val downloadUrl = storageRef.downloadUrl.await()
+            downloadUrl.toString() // Return the URL
+        } catch (e: Exception) {
+            Log.e("ImageUpload", "Image upload failed", e)
+            null // Return null if upload fails
         }
     }
 
-    fun updateCrop(cropId: String, cropName: String, quantity: String, price: String) {
-        viewModelScope.launch {
-            val cropData = hashMapOf(
-                "cropName" to cropName,
-                "quantity" to quantity,
-                "price" to price
-            )
-
-            FirebaseFirestore.getInstance()
-                .collection("Crops")
-                .document(cropId)
-                .update(cropData.toMap())
-                .addOnSuccessListener {
-                    cropUpdatedSuccess.value = true
-                }
-                .addOnFailureListener {
-                    cropUpdatedSuccess.value = false
-                }
-        }
+    private fun getFileExtension(uri: Uri): String {
+        val contentResolver = getApplication<Application>().contentResolver
+        val mimeTypeMap = MimeTypeMap.getSingleton()
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ?: "jpg"
     }
 
-    fun deleteCrop(cropId: String) {
+    fun clearImageData() {
+        _imageUrl.value = null
+        _uploadError.value = null
+    }
+    fun addCropToDatabase(
+        cropName: String,
+        quantity: String,
+        price: String,
+        imageUri: Uri
+    ) {
         viewModelScope.launch {
-            FirebaseFirestore.getInstance()
-                .collection("Crops")
-                .document(cropId)
-                .delete()
-                .addOnSuccessListener {
-                    cropDeletedSuccess.value = true
+            try {
+                _isUploading.value = true
+
+                // Upload image and get URL
+                val uploadedImageUrl = uploadImageToStorage(imageUri)
+                if (uploadedImageUrl == null) {
+                    _uploadError.value = "Image upload failed"
+                    return@launch
                 }
-                .addOnFailureListener {
-                    cropDeletedSuccess.value = false
-                }
+
+                // Add crop data
+                val cropData = hashMapOf(
+                    "cropName" to cropName,
+                    "quantity" to quantity,
+                    "price" to price,
+                    "imageUrl" to uploadedImageUrl,
+                    "harvestDate" to harvestDate.value
+                )
+
+                FirebaseFirestore.getInstance()
+                    .collection("Crops")
+                    .add(cropData)
+                    .addOnSuccessListener {
+                        cropAddedSuccess.value = true
+                        Log.d("FirestoreSuccess", "Crop added successfully!")
+                    }
+                    .addOnFailureListener { e ->
+                        cropAddedSuccess.value = false
+                        Log.e("FirestoreError", "Error adding crop: $e")
+                    }
+            } catch (e: Exception) {
+                Log.e("UploadError", "Error adding crop details: $e")
+                _uploadError.value = e.message ?: "Unknown error"
+            } finally {
+                _isUploading.value = false
+            }
         }
     }
 
@@ -157,10 +226,12 @@ class MarketViewModel : ViewModel() {
 
                         val cropsList = snapshot?.documents?.mapNotNull { doc ->
                             FarmerCrop(
-                                id = doc.id,  // Include the document ID
+                                id = doc.id,
                                 cropName = doc.getString("cropName") ?: "",
                                 quantity = doc.getString("quantity") ?: "",
-                                price = doc.getString("price") ?: ""
+                                price = doc.getString("price") ?: "",
+                                imageUrl = doc.getString("imageUrl"),
+                                harvestDate = doc.getString("harvestDate") ?: ""
                             )
                         } ?: emptyList()
 

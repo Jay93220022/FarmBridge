@@ -48,7 +48,7 @@ fun Splash(modifier: Modifier = Modifier, navController: NavController) {
             )
         )
         delay(1000L)
-        navController.navigate(Screen.SelectLanguage.route) {
+        navController.navigate(Screen.RoleSelectionScreen.route) {
             popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }

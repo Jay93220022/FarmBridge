@@ -58,6 +58,8 @@ import com.example.farmbridge.ui.theme.uitheme.FarmBridgeTheme
 
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import androidx.compose.material.icons.filled.Close as Close
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherScreen(weatherViewModel: WeatherViewModel, languageViewModel: LanguageViewModel, modifier: Modifier) {
@@ -136,6 +138,7 @@ fun WeatherScreen(weatherViewModel: WeatherViewModel, languageViewModel: Languag
                             suggestions.clear()
                         }
                     },
+                    
                     label = {
                         Text(
                             text = when (currentLanguage) {
@@ -144,6 +147,16 @@ fun WeatherScreen(weatherViewModel: WeatherViewModel, languageViewModel: Languag
                                 else -> "Search for any Location"
                             }
                         )
+                    },
+                    trailingIcon = {
+                        if (city.isNotEmpty()) {
+                            IconButton(onClick = { city = "" }) {
+                                Icon(
+                                    imageVector = Icons.Default.Close, // Use a close/cancel icon
+                                    contentDescription = "Clear text"
+                                )
+                            }
+                        }
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF006838),

@@ -198,7 +198,7 @@ languageViewModel: LanguageViewModel,
                             authViewModel.login(email, password, {
                               //  preferenceHelper.setLoggedIn(true)
 
-                                navController.navigate(Screen.Dashboard.route) {
+                                navController.navigate(Screen.MainScreen.route) {
                                 // popUpTo(Screen.Login.route) { inclusive = true }
 
                                 }

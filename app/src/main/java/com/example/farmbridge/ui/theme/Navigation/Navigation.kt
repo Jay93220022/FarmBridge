@@ -19,18 +19,27 @@ import com.example.farmbridge.ui.theme.Screens.SelectLanguage
 import com.example.farmbridge.ui.theme.Screens.Splash
 
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.app.ui.customer.CustomerDashboard
 import com.example.farmbridge.ui.Screens.AddCropScreen
 import com.example.farmbridge.ui.theme.Components.MainScreen
 import com.example.farmbridge.ui.theme.LanguageViewModel
+import com.example.farmbridge.ui.theme.Screens.CropSelectionScreen
+import com.example.farmbridge.ui.theme.Screens.CustomerLoginScreen
+
 import com.example.farmbridge.ui.theme.Screens.Dashboard
 import com.example.farmbridge.ui.theme.Screens.ForgotPassword
 import com.example.farmbridge.ui.theme.Screens.LatestUpdatesScreen
 import com.example.farmbridge.ui.theme.Screens.Login
+import com.example.farmbridge.ui.theme.Screens.PlantDiseaseRecognitionScreen
+import com.example.farmbridge.ui.theme.Screens.ProfileScreen
 
 import com.example.farmbridge.ui.theme.Screens.Register
+import com.example.farmbridge.ui.theme.Screens.RoleSelectionScreen
 import com.example.farmbridge.ui.theme.Screens.WeatherScreen
 import com.example.farmbridge.ui.theme.ViewModels.AuthViewModel
+import com.example.farmbridge.ui.theme.ViewModels.CustomerAuthViewModel
 import com.example.farmbridge.ui.theme.ViewModels.MarketViewModel
+import com.example.farmbridge.ui.theme.ViewModels.PlantDiseaseViewModel
 import com.example.farmbridge.ui.theme.ViewModels.WeatherViewModel
 
 // Composable Navigation function
@@ -38,7 +47,9 @@ import com.example.farmbridge.ui.theme.ViewModels.WeatherViewModel
 fun Navigation(authViewModel: AuthViewModel,
                languageViewModel: LanguageViewModel,
                marketPriceViewModel: MarketViewModel,
-               weatherViewModel: WeatherViewModel) {
+               weatherViewModel: WeatherViewModel,
+               plantDiseaseViewModel: PlantDiseaseViewModel,
+               customerAuthViewModel: CustomerAuthViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
 
@@ -82,14 +93,27 @@ composable(Screen.WeatherScreen.route){
     WeatherScreen(weatherViewModel,languageViewModel, modifier = Modifier)
 }
         composable(Screen.MainScreen.route){
-            MainScreen(modifier = Modifier,weatherViewModel,languageViewModel,navController,marketPriceViewModel, context )
+            MainScreen(modifier = Modifier,weatherViewModel,languageViewModel,navController,marketPriceViewModel, context ,plantDiseaseViewModel)
         }
         composable(Screen.AddCropnScreen.route){
-            AddCropScreen(marketPriceViewModel ,context, languageViewModel )
+            AddCropScreen(marketPriceViewModel ,context, languageViewModel,navController )
         }
 
         composable(Screen.LatestUpdates.route) {
             LatestUpdatesScreen(navController = navController)
         }
+        composable(Screen.ProfileScreen.route){
+            ProfileScreen(navController  , authViewModel  )
+        }
+        composable(Screen.CustomerLogin.route){
+           CustomerLoginScreen(navController = navController, languageViewModel = languageViewModel, customerAuthViewModel =customerAuthViewModel )
+        }
+        composable(Screen.CustomerDashboard.route){
+            CustomerDashboard(navController , marketViewModel=marketPriceViewModel )
+        }
+        composable(Screen.RoleSelectionScreen.route){
+            RoleSelectionScreen(navController , languageViewModel )
+        }
+
     }
 }

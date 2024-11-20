@@ -12,4 +12,9 @@ sealed class Screen(val route:String){
     object  MainScreen:Screen("mainscreen")
 object AddCropnScreen:Screen("addcropscreen")
     object LatestUpdates : Screen("latest_updates")
+    object  ProfileScreen:Screen("profileScreen")
+object PlantDiseasesRecognitionScreen :Screen("cropselectionscreen")
+    object CustomerLogin :Screen("CustomerLogin")
+    object CustomerDashboard:Screen("CusDashboard")
+    object RoleSelectionScreen:Screen("RoleSelectionScreen")
 }

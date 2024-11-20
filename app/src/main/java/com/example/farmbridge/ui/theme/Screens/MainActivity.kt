@@ -15,9 +15,14 @@ import com.example.farmbridge.ui.theme.Navigation.Navigation
 import com.example.farmbridge.ui.theme.Navigation.PreferenceHelper
 import com.example.farmbridge.ui.theme.Repository.LanguageRepository
 import com.example.farmbridge.ui.theme.Repository.AuthRepository // Import your AuthRepository
+import com.example.farmbridge.ui.theme.Repository.CustomerRepository
 import com.example.farmbridge.ui.theme.ViewModels.AuthViewModel // Import your AuthViewModel
+import com.example.farmbridge.ui.theme.ViewModels.CustomerAuthViewModel
 import com.example.farmbridge.ui.theme.ViewModels.MarketViewModel
+import com.example.farmbridge.ui.theme.ViewModels.PlantDiseaseViewModel
 import com.example.farmbridge.ui.theme.ViewModels.WeatherViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -28,14 +33,16 @@ class MainActivity : ComponentActivity() {
         // Create instances of the repositories
         val languageRepository = LanguageRepository(preferenceHelper = PreferenceHelper(applicationContext))
         val authRepository = AuthRepository()
-
+        val firestore = FirebaseFirestore.getInstance()
 
         setContent {
             FarmBridgeApp(languageRepository,
                 authRepository,
                 preferenceHelper= PreferenceHelper(applicationContext),
-                marketPriceViewModel = MarketViewModel(),
-                weatherViewModel = WeatherViewModel()
+                marketPriceViewModel = MarketViewModel(application),
+                weatherViewModel = WeatherViewModel(),
+                plantDiseaseViewModel = PlantDiseaseViewModel(),
+                customerAuthViewModel = CustomerAuthViewModel(CustomerRepository(firestore))
             )
         }
     }
@@ -46,7 +53,8 @@ fun FarmBridgeApp(languageRepository: LanguageRepository,
                   authRepository: AuthRepository,
                   preferenceHelper: PreferenceHelper,
                   marketPriceViewModel: MarketViewModel,
-                  weatherViewModel: WeatherViewModel) {
+                  weatherViewModel: WeatherViewModel,
+                  plantDiseaseViewModel: PlantDiseaseViewModel,customerAuthViewModel: CustomerAuthViewModel) {
     val languageViewModel: LanguageViewModel = viewModel(
         factory = LanguageViewModel.Factory(languageRepository,preferenceHelper)
     )
@@ -60,6 +68,6 @@ fun FarmBridgeApp(languageRepository: LanguageRepository,
 
     // Theme and Navigation
     FarmBridgeTheme {
-        Navigation(authViewModel, languageViewModel,marketPriceViewModel,weatherViewModel)
+        Navigation(authViewModel, languageViewModel,marketPriceViewModel,weatherViewModel,plantDiseaseViewModel,customerAuthViewModel)
     }
 }

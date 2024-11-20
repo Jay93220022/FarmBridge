@@ -34,7 +34,7 @@ fun Dashboard(
             MenuBar(
                 title = "Dashboard",
                 onMenuClick = { /* Handle menu click */ },
-                onProfileClick = { /* Navigate to profile screen */ },
+                onProfileClick = { navController.navigate(Screen.ProfileScreen.route)},
                 onSettingsClick = { /* Navigate to settings screen */ },
                 onChangeLanguageClick = { showLanguageDialog = true }, // Show language dialog
                 navController = navController

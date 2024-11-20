@@ -36,6 +36,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.farmbridge.ui.theme.Screens.PlantDiseaseRecognitionScreen
+import com.example.farmbridge.ui.theme.ViewModels.PlantDiseaseViewModel
 
 @Composable
 fun MainScreen(
@@ -44,7 +46,8 @@ fun MainScreen(
     languageViewModel: LanguageViewModel,
     navController: NavController,
     marketViewModel: MarketViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    plantDiseaseViewModel: PlantDiseaseViewModel
 ) {
     // Fetch current language
     val currentLanguage = languageViewModel.currentLanguage.collectAsState(initial = "English").value
@@ -153,7 +156,8 @@ fun MainScreen(
             navController,
             weatherViewModel,
             context,
-            marketViewModel
+            marketViewModel,
+            plantDiseaseViewModel
         )
     }
 }
@@ -166,7 +170,8 @@ fun ContentScreen(
     navController: NavController,
     weatherViewModel: WeatherViewModel,
     context: android.content.Context,
-    marketViewModel: MarketViewModel
+    marketViewModel: MarketViewModel,
+    plantDiseaseViewModel: PlantDiseaseViewModel
 ) {
     when (selectedIndex) {
         0 -> Dashboard(viewModel = languageViewModel, navController = navController)
@@ -176,11 +181,7 @@ fun ContentScreen(
             languageViewModel = languageViewModel,
             modifier = modifier
         )
-        5 -> AddCropScreen(marketViewModel, context,languageViewModel)
-        3 -> WeatherScreen(
-            weatherViewModel = weatherViewModel,
-            languageViewModel = languageViewModel,
-            modifier = modifier
-        )
+        5 -> AddCropScreen(marketViewModel, context,languageViewModel,navController)
+        3 -> PlantDiseaseRecognitionScreen(viewModel = plantDiseaseViewModel)
     }
 }

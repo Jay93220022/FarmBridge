@@ -1,12 +1,21 @@
 package com.example.farmbridge.ui.Screens
-
+import android.app.DatePickerDialog
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.*
+import java.util.*
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -14,57 +23,73 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.farmbridge.ui.theme.LanguageViewModel
+import com.example.farmbridge.ui.theme.Navigation.Screen
 import com.example.farmbridge.ui.theme.ViewModels.MarketViewModel
-
+import com.google.firebase.storage.FirebaseStorage
+import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: android.content.Context, languageViewModel: LanguageViewModel) {
+fun AddCropScreen(
+    marketViewModel: MarketViewModel = viewModel(),
+    context: android.content.Context,
+    languageViewModel: LanguageViewModel,
+    navController: NavController) {
     var cropName by remember { mutableStateOf("") }
     var cropQuantity by remember { mutableStateOf("") }
     var manualPrice by remember { mutableStateOf("") }
+    var harvestDate by remember { mutableStateOf("") }
     val suggestedPrice = marketViewModel.suggestedPrice.value
     val farmerCrops = marketViewModel.farmerCrops.collectAsState()
-
-    // States for edit dialog
+//    val imageUrl = marketViewModel.imageUrl.collectAsState()
+//    val isUploading = marketViewModel.isUploading.collectAsState()
+//    val uploadError = marketViewModel.uploadError.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedCrop by remember { mutableStateOf<MarketViewModel.FarmerCrop?>(null) }
-
-    // States for delete confirmation
     var showDeleteDialog by remember { mutableStateOf(false) }
     var cropToDelete by remember { mutableStateOf<MarketViewModel.FarmerCrop?>(null) }
-
-    // Observe the success states for showing toasts
+    val calendar = Calendar.getInstance()
+    val datePickerDialog = DatePickerDialog(
+        LocalContext.current,
+        { _, year, month, dayOfMonth ->
+            val selectedDate = "$dayOfMonth/${month + 1}/$year"  // Adjusting for month offset
+            harvestDate = selectedDate
+            marketViewModel.harvestDate.value = selectedDate
+        }, calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH))
     val cropAddedSuccess by remember { marketViewModel.cropAddedSuccess }
     val cropUpdatedSuccess by remember { marketViewModel.cropUpdatedSuccess }
     val cropDeletedSuccess by remember { marketViewModel.cropDeletedSuccess }
     val green = Color(0xFF4CAF50)
     val currentLanguage = languageViewModel.currentLanguage.collectAsState(initial = "English").value
-
-    // Show toasts for different actions
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            marketViewModel.uploadImageToStorage(it) } }
     LaunchedEffect(cropAddedSuccess, cropUpdatedSuccess, cropDeletedSuccess) {
         when {
             cropAddedSuccess -> {
                 Toast.makeText(context, "Crop added successfully!", Toast.LENGTH_SHORT).show()
                 marketViewModel.cropAddedSuccess.value = false
+                // Reset fields
                 cropName = ""
                 cropQuantity = ""
                 manualPrice = ""
-            }
+                harvestDate = ""
+                marketViewModel.clearImageData() }
             cropUpdatedSuccess -> {
                 Toast.makeText(context, "Crop updated successfully!", Toast.LENGTH_SHORT).show()
-                marketViewModel.cropUpdatedSuccess.value = false
-            }
+                marketViewModel.cropUpdatedSuccess.value = false }
             cropDeletedSuccess -> {
                 Toast.makeText(context, "Crop deleted successfully!", Toast.LENGTH_SHORT).show()
-                marketViewModel.cropDeletedSuccess.value = false
-            }
-        }
-    }
-
+                marketViewModel.cropDeletedSuccess.value = false } } }
     Scaffold(
         topBar = {
             SmallTopAppBar(
@@ -80,9 +105,11 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                 colors = TopAppBarDefaults.smallTopAppBarColors(
                     containerColor = green,
                     titleContentColor = Color.White
-                )
-            )
-        }
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate(Screen.MainScreen.route) }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    } }) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -92,21 +119,18 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                 .padding(bottom = 70.dp)
         ) {
             item {
-                // Input Form Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Crop Name Field
                         OutlinedTextField(
                             value = cropName,
                             onValueChange = {
                                 cropName = it
                                 if (cropName.isNotBlank()) {
-                                    marketViewModel.getSuggestedPriceForCrop(cropName)
-                                }
+                                    marketViewModel.getSuggestedPriceForCrop(cropName) }
                             }, singleLine = true,
                             label = {
                                 Text(
@@ -114,25 +138,44 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                         "Hindi" -> "फसल का नाम"
                                         "Marathi" -> "पिकाचे नाव"
                                         else -> "Crop Name"
-                                    }
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
+                                    }) },
+                            modifier = Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.height(8.dp))
-
+                        OutlinedTextField(
+                            value = harvestDate,
+                            onValueChange = {
+                                harvestDate = it
+                                marketViewModel.harvestDate.value = it
+                            },
+                            singleLine = true,
+                            label = {
+                                Text(
+                                    text = when (currentLanguage) {
+                                        "Hindi" -> "कटाई की तारीख"
+                                        "Marathi" -> "कापणी तारीख"
+                                        else -> "Harvest Date"
+                                    }) },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        datePickerDialog.show()
+                                    }) {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange, // Material Design standard icon
+                                        contentDescription = "Select Date"
+                                    ) }},
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true // Optional, prevents direct text input
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         if (suggestedPrice != null) {
-                            // Show suggested price card if available
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                                 )
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(12.dp)
-                                ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = when (currentLanguage) {
                                             "Hindi" -> "वर्तमान बाजार मूल्य"
@@ -147,20 +190,15 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                         style = MaterialTheme.typography.headlineSmall,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                                         fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
+                                    ) } }
                         } else {
-                            // Show manual price input if no suggestion available
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
                                 )
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(12.dp)
-                                ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = when (currentLanguage) {
                                             "Hindi" -> "कोई सुझाया गया मूल्य उपलब्ध नहीं है"
@@ -172,7 +210,8 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     OutlinedTextField(
-                                        value = manualPrice, singleLine = true,
+                                        value = manualPrice,
+                                        singleLine = true,
                                         onValueChange = { manualPrice = it },
                                         label = {
                                             Text(
@@ -184,13 +223,10 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                             )
                                         },
                                         modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-
+                                    ) } } }
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Quantity Field
                         OutlinedTextField(
                             value = cropQuantity,
                             singleLine = true,
@@ -209,6 +245,53 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Image Upload Section
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = { launcher.launch("image/*") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = green,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(
+                                    text = when (currentLanguage) {
+                                        "Hindi" -> "फसल की छवि जोड़ें"
+                                        "Marathi" -> "पीक प्रतिमा जोडा"
+                                        else -> "Add Crop Image"
+                                    }
+                                )
+                            }
+
+                            if (isUploading.value) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = green
+                                )
+                            } else if (imageUrl.value != null) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Image uploaded",
+                                    tint = green
+                                )
+                            }
+                        }
+
+                        if (uploadError.value != null) {
+                            Text(
+                                text = uploadError.value!!,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Add Crop Button
                         Button(
                             onClick = {
                                 if (cropName.isNotBlank() && cropQuantity.isNotBlank() &&
@@ -231,7 +314,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                     ).show()
                                 }
                             },
-                            modifier = Modifier.align(Alignment.End),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = green,
                                 contentColor = Color.White
@@ -250,6 +333,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Your Added Crops Section
                 Text(
                     text = when (currentLanguage) {
                         "Hindi" -> "आपके द्वारा जोड़ी गई फसलें"
@@ -261,6 +345,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                 )
             }
 
+            // Crop List
             items(farmerCrops.value) { crop ->
                 Card(
                     modifier = Modifier
@@ -286,6 +371,12 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                                 text = "${crop.quantity} Quintals",
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                            if (crop.harvestDate.isNotBlank()) {
+                                Text(
+                                    text = "Harvest: ${crop.harvestDate}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
 
                         Row {
@@ -295,11 +386,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Edit,
-                                    contentDescription = when (currentLanguage) {
-                                        "Hindi" -> "संपादित करें"
-                                        "Marathi" -> "संपादित करा"
-                                        else -> "Edit"
-                                    }
+                                    contentDescription = "Edit"
                                 )
                             }
 
@@ -309,11 +396,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
-                                    contentDescription = when (currentLanguage) {
-                                        "Hindi" -> "हटाएं"
-                                        "Marathi" -> "काढा"
-                                        else -> "Delete"
-                                    }
+                                    contentDescription = "Delete"
                                 )
                             }
                         }
@@ -322,6 +405,7 @@ fun AddCropScreen(marketViewModel: MarketViewModel = viewModel(), context: andro
             }
         }
     }
+
 
     // Edit Dialog and Delete Confirmation Dialog remain the same...
 

@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -82,7 +83,16 @@ implementation("androidx.navigation:navigation-compose:2.4.0-alpha04")
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.7.5")
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation ("org.tensorflow:tensorflow-lite:2.8.0")
+    implementation ("org.tensorflow:tensorflow-lite-support:0.3.1")
+    implementation ("org.tensorflow:tensorflow-lite-task-vision:0.3.1")
+//    implementation ("androidx.camera:camera-core:1.5.0")
+//    implementation ("androidx.camera:camera-lifecycle:1.5.0")
+//    implementation ("androidx.camera:camera-view:1.5.0")
   //  implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
+    implementation (platform("com.google.firebase:firebase-bom:32.0.0"))  // Ensure you are using the Firebase BOM for version management
+    implementation ("com.google.firebase:firebase-database")
 
 
 }

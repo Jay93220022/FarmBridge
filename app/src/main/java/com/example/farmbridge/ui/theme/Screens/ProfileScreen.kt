@@ -48,7 +48,9 @@ fun ProfileScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF4CAF50)
+                )
             )
         },
     ) { paddingValues ->
